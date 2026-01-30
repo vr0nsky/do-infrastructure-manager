@@ -11,11 +11,18 @@ app = typer.Typer(no_args_is_help=True)
 console = Console()
 
 
+# Default paths
+TERRAFORM_DIR = Path("./terraform/generated")
+ANSIBLE_DIR = Path("./ansible/inventory")
+
+
 @app.command("terraform")
 def export_terraform(
-    output: Path = typer.Option(Path("./generated"), "--output", "-o", help="Output directory"),
+    output: Path = typer.Option(None, "--output", "-o", help="Output directory (default: ./terraform/generated)"),
     resource_type: str = typer.Option("all", "--type", "-t", help="Resource type: all, droplets, volumes, domains"),
 ):
+    if output is None:
+        output = TERRAFORM_DIR
     """Generate Terraform configurations from existing resources."""
     client = get_client()
 
@@ -150,8 +157,10 @@ resource "digitalocean_firewall" "{name}" {{
 
 @app.command("ansible")
 def export_ansible(
-    output: Path = typer.Option(Path("./generated"), "--output", "-o", help="Output directory"),
+    output: Path = typer.Option(None, "--output", "-o", help="Output directory (default: ./ansible/inventory)"),
 ):
+    if output is None:
+        output = ANSIBLE_DIR
     """Generate Ansible inventory from existing droplets."""
     client = get_client()
 

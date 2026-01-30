@@ -3,7 +3,7 @@
 import typer
 from rich.console import Console
 
-from dom.commands import audit, costs, cleanup, export
+from dom.commands import audit, costs, cleanup, export, tf, ans
 
 app = typer.Typer(
     name="dom",
@@ -18,6 +18,8 @@ app.add_typer(audit.app, name="audit", help="Audit and list DigitalOcean resourc
 app.add_typer(costs.app, name="costs", help="Analyze costs and billing")
 app.add_typer(cleanup.app, name="cleanup", help="Find orphaned or unused resources")
 app.add_typer(export.app, name="export", help="Export resources to Terraform/Ansible")
+app.add_typer(tf.app, name="tf", help="Terraform commands (init, plan, apply, import)")
+app.add_typer(ans.app, name="ans", help="Ansible commands (ping, play, shell)")
 
 
 @app.command()
