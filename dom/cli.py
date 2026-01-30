@@ -30,11 +30,12 @@ def version():
 @app.command()
 def tui():
     """Launch interactive TUI (Terminal User Interface)."""
+    import os
     from dom.tui import DOManagerApp
     app = DOManagerApp()
     result = app.run()
-    if result:
-        console.print(f"\nRun: [cyan]{result}[/cyan]")
+    if result and result.startswith("ssh "):
+        os.system(result)
 
 
 @app.command()
