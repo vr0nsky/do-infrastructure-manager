@@ -12,21 +12,21 @@ app = typer.Typer(no_args_is_help=True)
 console = Console()
 
 ANSIBLE_DIR = Path("./ansible")
-INVENTORY_DIR = ANSIBLE_DIR / "inventory"
-PLAYBOOKS_DIR = ANSIBLE_DIR / "playbooks"
+INVENTORY_DIR = Path("./inventory")  # Relative to ANSIBLE_DIR
+PLAYBOOKS_DIR = Path("./playbooks")  # Relative to ANSIBLE_DIR
 
 
 def get_inventory_file() -> Path:
-    """Get the inventory file path."""
-    ini_file = INVENTORY_DIR / "inventory.ini"
-    yml_file = INVENTORY_DIR / "inventory.yml"
+    """Get the inventory file path (relative to ANSIBLE_DIR)."""
+    ini_file = ANSIBLE_DIR / "inventory" / "inventory.ini"
+    yml_file = ANSIBLE_DIR / "inventory" / "inventory.yml"
 
     if ini_file.exists():
-        return ini_file
+        return INVENTORY_DIR / "inventory.ini"
     elif yml_file.exists():
-        return yml_file
+        return INVENTORY_DIR / "inventory.yml"
     else:
-        console.print(f"[red]Error:[/red] No inventory found in {INVENTORY_DIR}")
+        console.print(f"[red]Error:[/red] No inventory found in {ANSIBLE_DIR / 'inventory'}")
         console.print("Run 'dom export ansible' first")
         raise typer.Exit(1)
 
@@ -64,21 +64,22 @@ def ans_play(
 ):
     """Run an Ansible playbook."""
     inventory = get_inventory_file()
+    full_playbooks_dir = ANSIBLE_DIR / "playbooks"
 
     # Find playbook
-    playbook_path = PLAYBOOKS_DIR / playbook
+    playbook_path = full_playbooks_dir / playbook
     if not playbook_path.exists():
         # Try without .yml extension
-        playbook_path = PLAYBOOKS_DIR / f"{playbook}.yml"
+        playbook_path = full_playbooks_dir / f"{playbook}.yml"
 
     if not playbook_path.exists():
         console.print(f"[red]Error:[/red] Playbook not found: {playbook}")
-        console.print(f"\nAvailable playbooks in {PLAYBOOKS_DIR}:")
-        for p in PLAYBOOKS_DIR.glob("*.yml"):
+        console.print(f"\nAvailable playbooks in {full_playbooks_dir}:")
+        for p in full_playbooks_dir.glob("*.yml"):
             console.print(f"  - {p.name}")
         raise typer.Exit(1)
 
-    args = ["-i", str(inventory), str(playbook_path)]
+    args = ["-i", str(inventory), str(PLAYBOOKS_DIR / playbook_path.name)]
     if host != "all":
         args.extend(["--limit", host])
     if check:
@@ -91,10 +92,11 @@ def ans_play(
 def ans_inventory():
     """Show current inventory."""
     inventory = get_inventory_file()
+    full_path = ANSIBLE_DIR / inventory
 
-    console.print(f"\n[bold]Inventory:[/bold] {inventory}\n")
+    console.print(f"\n[bold]Inventory:[/bold] {full_path}\n")
 
-    with open(inventory) as f:
+    with open(full_path) as f:
         content = f.read()
 
     console.print(content)
@@ -129,9 +131,10 @@ def ans_shell(
 @app.command("playbooks")
 def ans_playbooks():
     """List available playbooks."""
-    console.print(f"\n[bold]Available Playbooks:[/bold] {PLAYBOOKS_DIR}\n")
+    full_playbooks_dir = ANSIBLE_DIR / "playbooks"
+    console.print(f"\n[bold]Available Playbooks:[/bold] {full_playbooks_dir}\n")
 
-    playbooks = list(PLAYBOOKS_DIR.glob("*.yml"))
+    playbooks = list(full_playbooks_dir.glob("*.yml"))
 
     if not playbooks:
         console.print("[dim]No playbooks found[/dim]")
