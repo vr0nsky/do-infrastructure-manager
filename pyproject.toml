@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    { name = "Massimo Ivaldi", email = "outsider.itc@gmail.com" }
 ]
 dependencies = [
     "typer[all]>=0.9.0",
@@ -29,6 +29,9 @@ dev = [
 
 [project.scripts]
 dom = "dom.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dom"]
 
 [tool.ruff]
 line-length = 88
