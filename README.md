@@ -9,6 +9,8 @@ CLI tool per gestire, auditare ed esportare l'infrastruttura DigitalOcean esiste
 - **Costs**: stima dei costi mensili e breakdown per tag
 - **Cleanup**: trova risorse orfane (volumi non attached, floating IP non assegnati, snapshot vecchi)
 - **Export**: genera configurazioni Terraform e inventory Ansible dalle risorse esistenti
+- **Terraform wrapper**: comandi `dom tf` per init, plan, apply, import
+- **Ansible wrapper**: comandi `dom ans` per ping, play, shell
 
 ## TUI Interattiva
 
@@ -61,11 +63,11 @@ dom costs estimate
 # Trova risorse orfane
 dom cleanup all
 
-# Esporta in Terraform
-dom export terraform -o ./generated/terraform
+# Esporta in Terraform (default: ./terraform/generated/)
+dom export terraform
 
-# Esporta inventory Ansible
-dom export ansible -o ./generated/ansible
+# Esporta inventory Ansible (default: ./ansible/inventory/)
+dom export ansible
 ```
 
 ## Comandi disponibili
@@ -87,50 +89,63 @@ dom cleanup all         # Trova tutto quello che si può pulire
 dom cleanup volumes     # Volumi non attached
 dom cleanup snapshots   # Snapshot vecchi (--older-than 90)
 
-dom export terraform    # Genera main.tf + import.sh
-dom export ansible      # Genera inventory.ini + inventory.yml
+dom export terraform    # Genera main.tf + import.sh (in ./terraform/generated/)
+dom export ansible      # Genera inventory.ini + inventory.yml (in ./ansible/inventory/)
 
 dom tui                 # Interfaccia interattiva
+
+# Terraform wrapper
+dom tf init             # terraform init
+dom tf plan             # terraform plan
+dom tf apply            # terraform apply
+dom tf apply -y         # apply senza conferma
+dom tf import           # esegue import.sh generato
+dom tf state            # lista risorse nello state
+dom tf destroy          # distrugge infrastruttura
+
+# Ansible wrapper
+dom ans ping            # ping tutti gli host
+dom ans play <playbook> # esegue un playbook
+dom ans shell "uptime"  # comando su tutti gli host
+dom ans inventory       # mostra inventory
+dom ans playbooks       # lista playbook disponibili
 ```
 
 ## Workflow consigliato
 
 ### Importare infrastruttura esistente in Terraform
 
-1. Esporta le risorse:
-   ```bash
-   dom export terraform -o ./terraform/imported
-   ```
+```bash
+# 1. Esporta le risorse
+dom export terraform
 
-2. Rivedi i file generati in `./terraform/imported/`
+# 2. Rivedi i file generati in ./terraform/generated/
 
-3. Inizializza Terraform:
-   ```bash
-   cd terraform
-   terraform init
-   ```
+# 3. Inizializza Terraform
+dom tf init
 
-4. Importa lo state:
-   ```bash
-   bash imported/import.sh
-   ```
+# 4. Importa lo state
+dom tf import
 
-5. Verifica:
-   ```bash
-   terraform plan  # Dovrebbe mostrare "No changes"
-   ```
+# 5. Verifica (dovrebbe mostrare "No changes")
+dom tf plan
+```
 
 ### Gestire con Ansible
 
-1. Esporta l'inventory:
-   ```bash
-   dom export ansible -o ./ansible/inventory
-   ```
+```bash
+# 1. Esporta l'inventory
+dom export ansible
 
-2. Testa la connessione:
-   ```bash
-   ansible -i ansible/inventory/inventory.ini all -m ping
-   ```
+# 2. Testa la connessione
+dom ans ping
+
+# 3. Esegui un playbook
+dom ans play setup-base
+
+# 4. Esegui un comando su tutti gli host
+dom ans shell "df -h"
+```
 
 ## Struttura progetto
 
@@ -142,7 +157,9 @@ do-infrastructure-manager/
 │   │   ├── audit.py
 │   │   ├── costs.py
 │   │   ├── cleanup.py
-│   │   └── export.py
+│   │   ├── export.py
+│   │   ├── tf.py           # Terraform wrapper
+│   │   └── ans.py          # Ansible wrapper
 │   ├── tui/                # Interfaccia interattiva
 │   │   └── app.py
 │   └── utils/
