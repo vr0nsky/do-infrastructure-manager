@@ -28,6 +28,16 @@ def version():
 
 
 @app.command()
+def tui():
+    """Launch interactive TUI (Terminal User Interface)."""
+    from dom.tui import DOManagerApp
+    app = DOManagerApp()
+    result = app.run()
+    if result:
+        console.print(f"\nRun: [cyan]{result}[/cyan]")
+
+
+@app.command()
 def status():
     """Quick status check of your DigitalOcean account."""
     from dom.utils import get_client
