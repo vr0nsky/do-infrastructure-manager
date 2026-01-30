@@ -4,10 +4,28 @@ CLI tool per gestire, auditare ed esportare l'infrastruttura DigitalOcean esiste
 
 ## Features
 
+- **TUI Interattiva**: interfaccia terminale navigabile con mouse e tastiera
 - **Audit**: visualizza tutte le risorse nel tuo account (droplets, volumes, domains, firewalls, databases, k8s)
 - **Costs**: stima dei costi mensili e breakdown per tag
 - **Cleanup**: trova risorse orfane (volumi non attached, floating IP non assegnati, snapshot vecchi)
 - **Export**: genera configurazioni Terraform e inventory Ansible dalle risorse esistenti
+
+## TUI Interattiva
+
+Lancia l'interfaccia interattiva:
+
+```bash
+dom tui
+```
+
+![TUI Screenshot](docs/tui-screenshot.png)
+
+**Navigazione:**
+- `↑/↓` o mouse: naviga nella lista
+- `Enter`: dettagli risorsa
+- `r`: refresh
+- `q`: esci
+- Click sui tab: cambia tipo risorsa (Droplets, Volumes, Domains...)
 
 ## Quick Start
 
@@ -71,6 +89,8 @@ dom cleanup snapshots   # Snapshot vecchi (--older-than 90)
 
 dom export terraform    # Genera main.tf + import.sh
 dom export ansible      # Genera inventory.ini + inventory.yml
+
+dom tui                 # Interfaccia interattiva
 ```
 
 ## Workflow consigliato
@@ -123,6 +143,8 @@ do-infrastructure-manager/
 │   │   ├── costs.py
 │   │   ├── cleanup.py
 │   │   └── export.py
+│   ├── tui/                # Interfaccia interattiva
+│   │   └── app.py
 │   └── utils/
 │       └── client.py       # Wrapper pydo
 ├── terraform/              # Configurazioni Terraform
