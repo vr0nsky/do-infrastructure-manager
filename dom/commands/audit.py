@@ -20,57 +20,103 @@ def audit_all():
     console.print("\n[bold]DigitalOcean Resource Audit[/bold]\n")
 
     # Droplets
-    droplets = client.droplets.list().get("droplets", [])
-    if droplets:
-        table = Table(title="Droplets")
-        table.add_column("ID", style="cyan")
-        table.add_column("Name", style="green")
-        table.add_column("Region")
-        table.add_column("Size")
-        table.add_column("IP")
-        table.add_column("Status")
+    console.print("[bold cyan]Droplets[/bold cyan]")
+    try:
+        droplets = client.droplets.list().get("droplets", [])
+        if droplets:
+            table = Table()
+            table.add_column("ID", style="cyan")
+            table.add_column("Name", style="green")
+            table.add_column("Region")
+            table.add_column("Size")
+            table.add_column("IP")
+            table.add_column("Status")
 
-        for d in droplets:
-            ip = d["networks"]["v4"][0]["ip_address"] if d["networks"]["v4"] else "-"
-            table.add_row(
-                str(d["id"]),
-                d["name"],
-                d["region"]["slug"],
-                d["size_slug"],
-                ip,
-                d["status"],
-            )
-        console.print(table)
-    else:
-        console.print("[dim]No droplets found[/dim]")
+            for d in droplets:
+                ip = d["networks"]["v4"][0]["ip_address"] if d["networks"]["v4"] else "-"
+                table.add_row(
+                    str(d["id"]),
+                    d["name"],
+                    d["region"]["slug"],
+                    d["size_slug"],
+                    ip,
+                    d["status"],
+                )
+            console.print(table)
+        else:
+            console.print("[dim]  No droplets found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
 
     # Volumes
-    volumes = client.volumes.list().get("volumes", [])
-    if volumes:
-        table = Table(title="\nVolumes")
-        table.add_column("ID", style="cyan")
-        table.add_column("Name", style="green")
-        table.add_column("Size (GB)")
-        table.add_column("Region")
-        table.add_column("Attached To")
+    console.print("\n[bold cyan]Volumes[/bold cyan]")
+    try:
+        volumes = client.volumes.list().get("volumes", [])
+        if volumes:
+            table = Table()
+            table.add_column("ID", style="cyan")
+            table.add_column("Name", style="green")
+            table.add_column("Size (GB)")
+            table.add_column("Region")
+            table.add_column("Attached To")
 
-        for v in volumes:
-            attached = ", ".join(str(d) for d in v.get("droplet_ids", [])) or "-"
-            table.add_row(
-                v["id"],
-                v["name"],
-                str(v["size_gigabytes"]),
-                v["region"]["slug"],
-                attached,
-            )
-        console.print(table)
+            for v in volumes:
+                attached = ", ".join(str(d) for d in v.get("droplet_ids", [])) or "-"
+                table.add_row(
+                    v["id"],
+                    v["name"],
+                    str(v["size_gigabytes"]),
+                    v["region"]["slug"],
+                    attached,
+                )
+            console.print(table)
+        else:
+            console.print("[dim]  No volumes found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
+
+    # Domains
+    console.print("\n[bold cyan]Domains[/bold cyan]")
+    try:
+        domains = client.domains.list().get("domains", [])
+        if domains:
+            for domain in domains:
+                console.print(f"  - {domain['name']}")
+        else:
+            console.print("[dim]  No domains found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
+
+    # Firewalls
+    console.print("\n[bold cyan]Firewalls[/bold cyan]")
+    try:
+        firewalls = client.firewalls.list().get("firewalls", [])
+        if firewalls:
+            for fw in firewalls:
+                console.print(f"  - {fw['name']} ({len(fw.get('droplet_ids', []))} droplets)")
+        else:
+            console.print("[dim]  No firewalls found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
+
+    # Load Balancers
+    console.print("\n[bold cyan]Load Balancers[/bold cyan]")
+    try:
+        lbs = client.load_balancers.list().get("load_balancers", [])
+        if lbs:
+            for lb in lbs:
+                console.print(f"  - {lb['name']} ({lb['ip']}) - {lb['status']}")
+        else:
+            console.print("[dim]  No load balancers found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
 
     # Databases
+    console.print("\n[bold cyan]Database Clusters[/bold cyan]")
     try:
         databases = client.databases.list_clusters().get("databases", [])
         if databases:
-            table = Table(title="\nDatabase Clusters")
-            table.add_column("ID", style="cyan")
+            table = Table()
             table.add_column("Name", style="green")
             table.add_column("Engine")
             table.add_column("Size")
@@ -79,7 +125,6 @@ def audit_all():
 
             for db in databases:
                 table.add_row(
-                    db["id"],
                     db["name"],
                     f"{db['engine']} {db['version']}",
                     db["size"],
@@ -87,15 +132,17 @@ def audit_all():
                     db["status"],
                 )
             console.print(table)
-    except Exception:
-        pass  # Databases API might not be available
+        else:
+            console.print("[dim]  No database clusters found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
 
     # Kubernetes
+    console.print("\n[bold cyan]Kubernetes Clusters[/bold cyan]")
     try:
         clusters = client.kubernetes.list_clusters().get("kubernetes_clusters", [])
         if clusters:
-            table = Table(title="\nKubernetes Clusters")
-            table.add_column("ID", style="cyan")
+            table = Table()
             table.add_column("Name", style="green")
             table.add_column("Region")
             table.add_column("Version")
@@ -105,7 +152,6 @@ def audit_all():
             for k in clusters:
                 node_count = sum(p["count"] for p in k.get("node_pools", []))
                 table.add_row(
-                    k["id"],
                     k["name"],
                     k["region"],
                     k["version"],
@@ -113,8 +159,26 @@ def audit_all():
                     k["status"]["state"],
                 )
             console.print(table)
-    except Exception:
-        pass
+        else:
+            console.print("[dim]  No kubernetes clusters found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
+
+    # Apps (App Platform)
+    console.print("\n[bold cyan]Apps (App Platform)[/bold cyan]")
+    try:
+        apps = client.apps.list().get("apps", [])
+        if apps:
+            for app in apps:
+                console.print(f"  - {app['spec']['name']} - {app.get('live_url', 'no url')}")
+        else:
+            console.print("[dim]  No apps found[/dim]")
+    except Exception as e:
+        console.print(f"[red]  Error: {e}[/red]")
+
+    # Spaces (object storage buckets)
+    console.print("\n[bold cyan]Spaces[/bold cyan]")
+    console.print("[dim]  (Spaces API not supported by pydo - use s3cmd or doctl)[/dim]")
 
     console.print()
 
