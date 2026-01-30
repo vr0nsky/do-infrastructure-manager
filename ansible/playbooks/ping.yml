@@ -1,0 +1,20 @@
+---
+# Simple ping playbook to test connectivity
+# Usage: ansible-playbook -i inventory/ playbooks/ping.yml
+
+- name: Test connectivity
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Ping all hosts
+      ansible.builtin.ping:
+
+    - name: Get hostname
+      ansible.builtin.command: hostname
+      register: hostname_result
+      changed_when: false
+
+    - name: Show hostname
+      ansible.builtin.debug:
+        msg: "Host {{ inventory_hostname }} is {{ hostname_result.stdout }}"

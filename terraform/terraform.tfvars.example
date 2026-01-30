@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars and fill in your values
+# NEVER commit terraform.tfvars to git!
+
+do_token    = "your-digitalocean-api-token"
+region      = "fra1"
+environment = "dev"
+project_name = "myproject"

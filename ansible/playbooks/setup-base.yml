@@ -1,0 +1,46 @@
+---
+# Base setup playbook for new droplets
+# Usage: ansible-playbook -i inventory/ playbooks/setup-base.yml
+
+- name: Base server setup
+  hosts: all
+  become: true
+
+  vars:
+    packages:
+      - curl
+      - wget
+      - vim
+      - htop
+      - git
+      - unzip
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        name: "{{ packages }}"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Set timezone
+      community.general.timezone:
+        name: UTC
+
+    - name: Configure SSH - disable password auth
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
