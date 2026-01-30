@@ -101,7 +101,6 @@ dom tf apply            # terraform apply
 dom tf apply -y         # apply senza conferma
 dom tf import           # esegue import.sh generato
 dom tf state            # lista risorse nello state
-dom tf destroy          # distrugge infrastruttura
 
 # Ansible wrapper
 dom ans ping            # ping tutti gli host

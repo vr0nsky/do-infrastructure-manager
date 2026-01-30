@@ -45,17 +45,6 @@ def tf_apply(
     run_terraform(args)
 
 
-@app.command("destroy")
-def tf_destroy(
-    auto_approve: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation"),
-):
-    """Destroy infrastructure (terraform destroy)."""
-    args = ["destroy"]
-    if auto_approve:
-        args.append("-auto-approve")
-    run_terraform(args)
-
-
 @app.command("import")
 def tf_import():
     """Run import.sh to import existing resources."""
